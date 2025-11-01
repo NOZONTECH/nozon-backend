@@ -15,7 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(cors({
-  origin: ['https://nozon.tech', 'http://localhost:8080']
+  origin: ['https://nozon.tech']
 }));
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));
@@ -34,8 +34,7 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-const dbPath = path.join(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'), (err) => {
   if (err) {
     console.error('Ошибка БД:', err.message);
   } else {
@@ -76,13 +75,20 @@ function createTables() {
       FOREIGN KEY(lot_id) REFERENCES lots(id) ON DELETE CASCADE
     )`);
 
-    // Создаём админа (пароль: admin123)
-    const adminPassword = '$2a$10$Zq9/5D8vQY6eF2xK7J3N7uR1X4Y5Z6a7b8c9d0e1f2g3h4i5j6k';
-    db.run(`INSERT OR IGNORE INTO users (username, password_hash) VALUES ('admin', ?)`, [adminPassword]);
+    const adminHash = '$2a$10$Zq9/5D8vQY6eF2xK7J3N7uR1X4Y5Z6a7b8c9d0e1f2g3h4i5j6k';
+    db.run(`INSERT OR IGNORE INTO users (username, password_hash) VALUES ('admin', ?)`, [adminHash]);
   });
 }
 
-// === API ===
+// === НОВЫЙ РОУТ: Загрузка баннера ===
+app.post('/api/upload-banner', upload.single('images'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Файл не загружен' });
+  }
+  res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+// === Остальные роуты (без изменений) ===
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password || username.length < 3) {
