@@ -14,7 +14,6 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// === CORS ===
 app.use(cors({
   origin: ['https://nozon.tech'],
   methods: ['GET', 'POST', 'DELETE'],
@@ -24,7 +23,6 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// === Multer ===
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, UPLOADS_DIR);
@@ -39,7 +37,6 @@ const upload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }
 });
 
-// === База данных ===
 const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'), (err) => {
   if (err) {
     console.error('Ошибка БД:', err.message);
@@ -81,15 +78,12 @@ function createTables() {
       FOREIGN KEY(lot_id) REFERENCES lots(id) ON DELETE CASCADE
     )`);
 
-    // Создаём админа
     const adminHash = '$2a$10$Zq9/5D8vQY6eF2xK7J3N7uR1X4Y5Z6a7b8c9d0e1f2g3h4i5j6k';
     db.run(`INSERT OR IGNORE INTO users (username, password_hash) VALUES ('admin', ?)`, [adminHash]);
   });
 }
 
 // === Роуты ===
-
-// Регистрация
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password || username.length < 3) {
@@ -106,7 +100,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Вход
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   db.get('SELECT password_hash FROM users WHERE username = ?', [username], async (err, row) => {
@@ -120,7 +113,6 @@ app.post('/api/login', async (req, res) => {
   });
 });
 
-// Получить все лоты
 app.get('/api/lots', (req, res) => {
   db.all('SELECT * FROM lots ORDER BY created_at DESC', (err, rows) => {
     if (err) return res.status(500).json({ error: 'Ошибка' });
@@ -132,7 +124,6 @@ app.get('/api/lots', (req, res) => {
   });
 });
 
-// Создать лот
 app.post('/api/lots', upload.array('images', 3), (req, res) => {
   const { title, description, start_price, reserve_price, end_time, owner } = req.body;
   const imageFiles = req.files?.map(file => file.filename) || [];
@@ -148,7 +139,6 @@ app.post('/api/lots', upload.array('images', 3), (req, res) => {
   });
 });
 
-// Сделать ставку
 app.post('/api/bids', (req, res) => {
   const { lot_id, user, amount } = req.body;
   if (!lot_id || !user || !amount) return res.status(400).json({ error: 'Ошибка' });
@@ -165,7 +155,6 @@ app.post('/api/bids', (req, res) => {
   });
 });
 
-// Удалить лот
 app.delete('/api/lots/:id', (req, res) => {
   db.run('DELETE FROM lots WHERE id = ?', [req.params.id], function(err) {
     if (err) return res.status(500).json({ error: 'Ошибка' });
@@ -174,7 +163,6 @@ app.delete('/api/lots/:id', (req, res) => {
   });
 });
 
-// Загрузка баннера (новый роут)
 app.post('/api/upload-banner', upload.single('images'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
@@ -182,7 +170,6 @@ app.post('/api/upload-banner', upload.single('images'), (req, res) => {
   res.json({ url: `/uploads/${req.file.filename}` });
 });
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
