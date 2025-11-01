@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nozon-backend
+    name: nozon-api
     env: node
     region: frankfurt
     buildCommand: "npm install"
