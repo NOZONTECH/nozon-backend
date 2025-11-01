@@ -1,0 +1,19 @@
+{
+  "name": "nozon-backend",
+  "version": "1.0.0",
+  "description": "Backend for nozon.tech",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "multer": "^1.4.5-lts.1",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
