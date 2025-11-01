@@ -1,7 +1,7 @@
 {
   "name": "nozon-backend",
   "version": "1.0.0",
-  "description": "Backend for nozon.tech",
+  "description": "Backend for nozon.tech auction",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
